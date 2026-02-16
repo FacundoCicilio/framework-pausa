@@ -2,96 +2,111 @@ import streamlit as st
 from datetime import datetime
 
 # ---------------------
-# Configuración de la app
+# Configuración
 # ---------------------
-st.set_page_config(page_title="💡 P.A.U.S.A. Amigable", page_icon="🧩", layout="centered")
-st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
+st.set_page_config(page_title="💡 P.A.U.S.A. PRO", page_icon="🧠", layout="centered")
 
-st.markdown("Tomar decisiones bajo presión puede generar errores. Esta herramienta te ayuda a **frenar el impulso y pensar de manera segura**.")
+st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
+st.markdown("Una herramienta para frenar el impulso y pensar con claridad antes de actuar.")
 st.divider()
 
 # ---------------------
-# Inputs mínimos
+# FORMULARIO (mejor UX en celular)
 # ---------------------
-st.markdown("### Tu situación")
-idea = st.text_area("Escribí tu idea o lo que querés hacer (opcional):", "", height=80)
+with st.form("form_pausa"):
 
-impulso = st.checkbox("Esto surge por impulso")
-riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
-apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
+    st.markdown("### Tu situación")
+    idea = st.text_area("Escribí tu idea o lo que querés hacer:", "", height=100)
 
-# ---------------------
-# Score de alerta interno
-# ---------------------
-score_alerta = sum([impulso, riesgo])
-if apoyo > 0.7:
-    score_alerta -= 0.5
-elif apoyo < 0.3:
-    score_alerta += 0.5
+    impulso = st.checkbox("Esto surge por impulso")
+    riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
+    apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
+
+    submit = st.form_submit_button("🔎 Analizar situación")
 
 # ---------------------
-# BAYES SIMPLIFICADO (interno)
+# CÁLCULO SOLO SI SE ENVÍA
 # ---------------------
-p_exito_base = 0.6
-p_evidencia = 0.5 + 0.5 * apoyo
-p_apoyo = 0.5 + 0.5 * apoyo
-p_exito = (p_evidencia * p_exito_base) / p_apoyo
-p_exito = min(max(p_exito, 0), 1)
+if submit:
 
-# ---------------------
-# TEORÍA DE JUEGOS SIMPLIFICADA (interno)
-# ---------------------
-cooperar = p_exito * apoyo
-no_cooperar = p_exito * (1 - apoyo)
+    # ---------------------
+    # MODELO AJUSTADO (coherente)
+    # ---------------------
+    p_exito_base = 0.6
 
-if cooperar >= no_cooperar:
-    recomendacion = "🟢 Podés avanzar con precaución"
-else:
-    recomendacion = "⚠️ Mejor pausar o replantear tu acción"
+    penalizacion = 0
+    if impulso:
+        penalizacion += 0.2
+    if riesgo:
+        penalizacion += 0.3
 
-# ---------------------
-# Interpretación amigable
-# ---------------------
-def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
-    if p_exito < 0.4:
-        exito_texto = "Bajas chances de que salga bien"
-    elif p_exito < 0.7:
-        exito_texto = "Medias chances de que salga bien"
+    bonus_apoyo = 0.25 * apoyo
+
+    p_exito = p_exito_base - penalizacion + bonus_apoyo
+    p_exito = min(max(p_exito, 0.1), 0.9)
+
+    # ---------------------
+    # NIVEL DE RIESGO
+    # ---------------------
+    if p_exito < 0.35:
+        nivel = "🔴 Riesgo Alto"
+        recomendacion = "Mejor no actuar ahora. Tomate tiempo."
+    elif p_exito < 0.6:
+        nivel = "🟡 Precaución"
+        recomendacion = "Avanzá solo con un paso muy pequeño y seguro."
     else:
-        exito_texto = "Altas chances de que salga bien"
+        nivel = "🟢 Condiciones Favorables"
+        recomendacion = "Podés avanzar, pero con prudencia."
 
-    if cooperar > no_cooperar:
-        coop_texto = "Si otros apoyan, esto tiene más chances de funcionar"
-    else:
-        coop_texto = "Si otros no apoyan, cuidado, podría salir mal"
+    # ---------------------
+    # RESULTADOS
+    # ---------------------
+    st.divider()
+    st.markdown("## Resultado del análisis")
 
-    return f"{exito_texto}. {coop_texto}. Recomendación: {recomendacion}."
+    st.metric("Probabilidad estimada de resultado favorable", f"{int(p_exito*100)}%")
+    st.progress(p_exito)
 
-mensaje_amigable = interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion)
+    st.markdown(f"### {nivel}")
+    st.markdown(f"**{recomendacion}**")
 
-# ---------------------
-# Mostrar resultados
-# ---------------------
-st.markdown("### Recomendación inmediata")
-st.markdown(f"**{mensaje_amigable}**")
+    # ---------------------
+    # Interpretación didáctica
+    # ---------------------
+    explicacion = []
 
-# ---------------------
-# Primer paso seguro
-# ---------------------
-accion = ""
-if recomendacion.startswith("🟢"):
-    st.markdown("### Primer paso seguro")
-    st.markdown("Definí **una acción pequeña y segura** que podés hacer primero:")
-    accion = st.text_input("Qué harías primero:", "")
+    if impulso:
+        explicacion.append("Detectamos que la decisión puede estar influida por impulso.")
+    if riesgo:
+        explicacion.append("La acción podría generar consecuencias negativas.")
+    if apoyo < 0.4:
+        explicacion.append("El nivel de apoyo percibido es bajo.")
+    elif apoyo > 0.7:
+        explicacion.append("Existe buen apoyo externo para la acción.")
+
+    if not explicacion:
+        explicacion.append("No se detectaron señales fuertes de alerta.")
+
+    st.markdown("### Interpretación")
+    for e in explicacion:
+        st.write("•", e)
+
+    # ---------------------
+    # PRIMER PASO SEGURO (siempre aparece)
+    # ---------------------
+    st.markdown("### Definí tu próximo paso prudente")
+    accion = st.text_input("¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?")
+
     if accion:
-        st.info(f"💡 Primer paso definido: {accion}")
+        st.info(f"✔️ Paso definido: {accion}")
 
 # ---------------------
-# Nota final
+# Nota legal al final
 # ---------------------
+st.divider()
 st.warning("""
 ⚠️ Nota importante:  
-Esta herramienta **no da consejos personales, legales, médicos ni de seguridad vial**.  
-Solo ofrece un **análisis de tu situación usando probabilidades y teoría de juegos** para ayudarte a pensar antes de actuar.  
-Los resultados reflejan un **escenario hipotético y simplificado**; tu juicio personal siempre es lo más importante.
+Esta herramienta no brinda asesoramiento legal, médico, financiero ni psicológico.  
+El análisis es un modelo simplificado con fines reflexivos y educativos.  
+La decisión final siempre es responsabilidad del usuario.
 """)
