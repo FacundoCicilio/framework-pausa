@@ -1,7 +1,5 @@
 import streamlit as st
 from datetime import datetime
-import smtplib
-from email.message import EmailMessage
 
 # ---------------------
 # Configuración de la app
@@ -87,29 +85,6 @@ if recomendacion.startswith("🟢"):
     accion = st.text_input("Qué harías primero:", "")
     if accion:
         st.info(f"💡 Primer paso definido: {accion}")
-
-# ---------------------
-# Enviar idea por mail (opcional)
-# ---------------------
-st.divider()
-st.markdown("### Enviar tu idea por email (opcional)")
-email_destino = st.text_input("Ingresá tu email para recibir la idea:")
-if st.button("Enviar idea por email") and email_destino:
-    try:
-        msg = EmailMessage()
-        msg.set_content(f"Idea: {idea}\nImpulso: {impulso}\nRiesgo: {riesgo}\nApoyo: {apoyo}\nInterpretación: {mensaje_amigable}\nPrimer paso: {accion}")
-        msg["Subject"] = "Registro de tu idea - Framework P.A.U.S.A."
-        msg["From"] = "TU_EMAIL@gmail.com"   # <-- reemplazar con tu email
-        msg["To"] = email_destino
-
-        # Usar SMTP (ejemplo Gmail)
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-        server.login("TU_EMAIL@gmail.com", "TU_CONTRASEÑA")  # <-- reemplazar
-        server.send_message(msg)
-        server.quit()
-        st.success("✅ Idea enviada por email correctamente")
-    except Exception as e:
-        st.error(f"❌ No se pudo enviar el email: {e}")
 
 # ---------------------
 # Nota final
