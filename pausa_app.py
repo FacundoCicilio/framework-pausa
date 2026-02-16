@@ -1,23 +1,34 @@
 import streamlit as st
 from datetime import datetime
 
+# ----------------------------
+# CONFIGURACIÓN DE LA PÁGINA
+# ----------------------------
 st.set_page_config(
     page_title="Framework P.A.U.S.A.",
     page_icon="🧠",
     layout="centered"
 )
 
+# ----------------------------
+# HEADER
+# ----------------------------
 st.title("🧠 Framework P.A.U.S.A.")
 st.subheader("Protocolo Algorítmico de Urgencias Sociales y Acción")
 
 st.markdown("""
-**Objetivo:** Reducir errores bajo presión social o impulso.  
-Respondé con honestidad. Tarda menos de 30 segundos.
+Tomar decisiones bajo presión suele generar errores evitables.  
+Este framework te ayuda a frenar el impulso y pensar mejor.  
+Tarda menos de 30 segundos.
 """)
 
 st.divider()
 
-st.markdown("### Evaluación de la situación")
+# ----------------------------
+# CHECKLIST PRINCIPAL
+# ----------------------------
+
+st.markdown("### Evaluación rápida")
 
 presion = st.checkbox("1️⃣ ¿Estoy siendo apurado por alguien?")
 riesgo = st.checkbox("2️⃣ ¿Hay riesgo legal o estoy usando algo que no es mío?")
@@ -27,6 +38,10 @@ urgencia = st.checkbox("5️⃣ ¿No es realmente urgente decidir ahora?")
 
 st.divider()
 
+# ----------------------------
+# BOTÓN DE EVALUACIÓN
+# ----------------------------
+
 if st.button("🔎 Evaluar decisión"):
 
     riesgo_score = sum([presion, riesgo, exposicion, identidad, urgencia])
@@ -35,53 +50,74 @@ if st.button("🔎 Evaluar decisión"):
     st.markdown("## Resultado")
 
     if riesgo_score >= 2:
-        st.error("🔴 RECOMENDACIÓN: NO AVANZAR")
+        st.error("🔴 Recomendación: NO AVANZAR")
+        st.markdown("Tomá distancia. Replanteá la decisión.")
     elif riesgo_score == 1:
-        st.warning("🟡 RECOMENDACIÓN: PAUSA 10 MINUTOS")
+        st.warning("🟡 Recomendación: PAUSA 10 MINUTOS")
+        st.markdown("Dale tiempo al sistema racional.")
     else:
-        st.success("🟢 RECOMENDACIÓN: OK PARA AVANZAR")
+        st.success("🟢 Recomendación: OK PARA AVANZAR")
+        st.markdown("No se detectan alertas significativas.")
 
     st.markdown(f"**Score de alerta:** {riesgo_score} / 5")
     st.caption(f"Evaluado el: {timestamp}")
 
     st.divider()
 
-    # ---------------------------
-    # MODO BAYES OPCIONAL
-    # ---------------------------
+    # ----------------------------
+    # MODO PROBABILIDAD (BAYES HUMANO)
+    # ----------------------------
 
-    st.markdown("### 🧮 Modo avanzado (opcional)")
-    activar_bayes = st.checkbox("Activar análisis probabilístico (Teorema de Bayes)")
+    st.markdown("### 🔮 Modo Probabilidad (opcional y curioso)")
+    activar_bayes = st.checkbox("Quiero estimar la probabilidad de que salga mal")
 
     if activar_bayes:
 
-        st.markdown("Estimá los siguientes valores:")
+        st.markdown(
+            "Ajustemos la probabilidad según tu experiencia y lo que estás viendo ahora."
+        )
 
         prior = st.slider(
-            "Probabilidad base de que esta decisión salga mal (%)",
+            "En general, ¿qué tan seguido este tipo de decisiones te salen mal? (%)",
             0, 100, 20
         ) / 100
 
         evidencia = st.slider(
-            "Qué tan fuerte es la señal actual de riesgo (%)",
+            "En este caso puntual, ¿qué tan fuerte sentís la alerta? (%)",
             0, 100, riesgo_score * 20
         ) / 100
 
-        # Bayes simplificado
-        # P(Malo|Señales) ≈ prior * evidencia normalizado
+        # Teorema de Bayes simplificado
         posterior = (prior * evidencia) / (
             (prior * evidencia) + ((1 - prior) * (1 - evidencia))
         )
 
-        st.markdown("### Resultado probabilístico")
+        st.markdown("### 📊 Estimación ajustada")
 
         st.write(
-            f"📊 Probabilidad ajustada de que la decisión salga mal: **{round(posterior*100,2)}%**"
+            f"Probabilidad estimada de que esta decisión salga mal: **{round(posterior*100,1)}%**"
         )
 
         if posterior > 0.6:
-            st.error("Alta probabilidad de error. Replantear seriamente.")
+            st.error("🚨 Alta probabilidad. No parece buena idea.")
         elif posterior > 0.3:
-            st.warning("Riesgo moderado. Considerar pausa.")
+            st.warning("⚠️ Riesgo moderado. Quizás conviene pausar.")
         else:
-            st.success("Riesgo bajo según estimación probabilística.")
+            st.success("✅ Riesgo bajo según tu propia estimación.")
+
+st.divider()
+
+# ----------------------------
+# FOOTER
+# ----------------------------
+
+st.markdown("""
+---
+
+### 📌 Idea central
+
+La mayoría de los errores no vienen de falta de inteligencia.  
+Vienen de decisiones tomadas bajo presión social y urgencia artificial.
+
+Este es solo un pequeño freno racional antes del impulso.
+""")
