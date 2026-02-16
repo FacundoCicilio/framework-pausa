@@ -1,5 +1,4 @@
 import streamlit as st
-import requests
 
 # ---------------------
 # Configuración
@@ -16,16 +15,27 @@ if "resultado" not in st.session_state:
     st.session_state.resultado = {}
 
 # ---------------------
-# Filtro básico de contenido peligroso
+# Filtros de seguridad
 # ---------------------
-def contenido_peligroso(texto):
-    palabras_riesgo = [
+def contenido_violento(texto):
+    palabras = [
         "matar", "arma", "disparar", "cuchillo",
         "golpear", "atacar", "explosivo",
-        "envenenar", "suicidar", "violencia"
+        "envenenar", "violencia"
     ]
     texto = texto.lower()
-    return any(p in texto for p in palabras_riesgo)
+    return any(p in texto for p in palabras)
+
+
+def contenido_ilegal(texto):
+    palabras = [
+        "droga", "vender droga", "traficar",
+        "estafa", "fraude", "robar",
+        "hackear", "lavar dinero",
+        "contrabando"
+    ]
+    texto = texto.lower()
+    return any(p in texto for p in palabras)
 
 # ---------------------
 # Evaluación estratégica del paso
@@ -37,7 +47,8 @@ def evaluar_paso(accion, nivel):
     aumenta_opciones = any(p in accion_lower for p in [
         "buscar", "explorar", "averiguar",
         "analizar", "investigar", "hablar",
-        "preguntar", "actualizar cv"
+        "preguntar", "actualizar cv",
+        "postular"
     ])
 
     irreversible = any(p in accion_lower for p in [
@@ -66,9 +77,9 @@ def evaluar_paso(accion, nivel):
     return "Movimiento neutral. Evaluá cómo impacta tu poder de negociación y tus alternativas futuras."
 
 # ---------------------
-# Interpretación didáctica
+# Interpretación general
 # ---------------------
-def generar_interpretacion(idea, p_exito, nivel):
+def generar_interpretacion(p_exito, nivel):
 
     if nivel == "Riesgo Alto":
         return "El escenario presenta baja probabilidad de resultado favorable. Conviene pausar y evitar decisiones irreversibles."
@@ -77,7 +88,6 @@ def generar_interpretacion(idea, p_exito, nivel):
         return "Existe incertidumbre relevante. Las decisiones que preserven opciones y reduzcan exposición son estratégicamente más sólidas."
 
     return "Las condiciones son relativamente favorables. Aun así, mantener prudencia mejora la estabilidad del resultado."
-
 
 # ---------------------
 # Título
@@ -107,15 +117,21 @@ with st.form("form_pausa"):
     submit = st.form_submit_button("🔎 Evaluar decisión")
 
 # ---------------------
-# Bloqueo preventivo
+# Bloqueo por violencia o ilegalidad
 # ---------------------
-if submit and contenido_peligroso(idea):
-    st.error("La acción planteada implica daño o ilegalidad.")
-    st.warning("La herramienta no puede analizar este tipo de situaciones.")
+if submit and (contenido_violento(idea) or contenido_ilegal(idea)):
+
+    st.error("La acción planteada implica violencia o ilegalidad.")
+
+    st.warning(
+        "La herramienta no puede analizar ni optimizar decisiones que involucren actividades ilegales o dañinas.\n\n"
+        "Si la motivación es económica o emocional, puede ser útil explorar alternativas legales que aumenten estabilidad y reduzcan riesgo."
+    )
+
     st.stop()
 
 # ---------------------
-# Cálculo del modelo
+# Cálculo del modelo Bayes simplificado
 # ---------------------
 if submit:
 
@@ -168,7 +184,7 @@ if st.session_state.analisis_realizado:
     st.markdown(f"**{r['recomendacion']}**")
 
     st.markdown("### Interpretación")
-    st.write(generar_interpretacion(r["idea"], r["p_exito"], r["nivel"]))
+    st.write(generar_interpretacion(r["p_exito"], r["nivel"]))
 
     # ---------------------
     # Paso estratégico
@@ -182,8 +198,8 @@ if st.session_state.analisis_realizado:
         if accion.strip() == "":
             st.warning("Definí un paso antes de confirmar.")
 
-        elif contenido_peligroso(accion):
-            st.error("El paso propuesto implica daño o ilegalidad.")
+        elif contenido_violento(accion) or contenido_ilegal(accion):
+            st.error("El paso propuesto implica violencia o ilegalidad. No puede validarse.")
             st.stop()
 
         else:
