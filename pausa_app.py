@@ -1,97 +1,60 @@
 import streamlit as st
-from datetime import datetime
 
-# ---------------------
-# Configuración de la app
-# ---------------------
-st.set_page_config(page_title="💡 P.A.U.S.A. Amigable", page_icon="🧩", layout="centered")
-st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
+st.title("🧠 Analizador de Decisiones - Safe Version")
 
-st.markdown("Tomar decisiones bajo presión puede generar errores. Esta herramienta te ayuda a **frenar el impulso y pensar de manera segura**.")
-st.divider()
+# --- Inputs ---
+idea = st.text_area("Describe tu idea o decisión:")
+impulso = st.checkbox("Impulso personal")
+riesgo = st.checkbox("Riesgo para otros")
+apoyo = st.slider("Nivel de apoyo de terceros (0 a 1)", 0.0, 1.0, 0.5)
 
-# ---------------------
-# Inputs mínimos
-# ---------------------
-st.markdown("### Tu situación")
-idea = st.text_area("Escribí tu idea o lo que querés hacer (opcional):", "", height=80)
-
-impulso = st.checkbox("Esto surge por impulso")
-riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
-apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
-
-# ---------------------
-# Score de alerta interno
-# ---------------------
-score_alerta = sum([impulso, riesgo])
-if apoyo > 0.7:
-    score_alerta -= 0.5
-elif apoyo < 0.3:
-    score_alerta += 0.5
-
-# ---------------------
-# BAYES SIMPLIFICADO (interno)
-# ---------------------
+# --- Variables base ---
 p_exito_base = 0.6
-p_evidencia = 0.5 + 0.5 * apoyo
-p_apoyo = 0.5 + 0.5 * apoyo
-p_exito = (p_evidencia * p_exito_base) / p_apoyo
-p_exito = min(max(p_exito, 0), 1)
+p_evidencia = 0.5 + 0.5 * apoyo  # simplificación bayesiana
+p_apoyo = p_evidencia  # igual que p_evidencia para simplificar
 
-# ---------------------
-# TEORÍA DE JUEGOS SIMPLIFICADA (interno)
-# ---------------------
-cooperar = p_exito * apoyo
-no_cooperar = p_exito * (1 - apoyo)
+# --- Cálculo bayesiano simplificado ---
+p_exito = (p_evidencia * p_exito_base) / p_apoyo  # resultado coherente con inputs
 
-if cooperar >= no_cooperar:
-    recomendacion = "🟢 Podés avanzar con precaución"
+# --- Recomendación ---
+if p_exito > 0.6:
+    recomendacion = "✅ Adelante"
 else:
-    recomendacion = "⚠️ Mejor pausar o replantear tu acción"
+    recomendacion = "⛔ Pausa"
 
-# ---------------------
-# Interpretación amigable
-# ---------------------
-def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
-    if p_exito < 0.4:
-        exito_texto = "Bajas chances de que salga bien"
-    elif p_exito < 0.7:
-        exito_texto = "Medias chances de que salga bien"
-    else:
-        exito_texto = "Altas chances de que salga bien"
+st.subheader("Recomendación:")
+st.write(recomendacion)
 
-    if cooperar > no_cooperar:
-        coop_texto = "Si otros apoyan, esto tiene más chances de funcionar"
-    else:
-        coop_texto = "Si otros no apoyan, cuidado, podría salir mal"
+# --- Historial en la sesión ---
+if 'historial' not in st.session_state:
+    st.session_state.historial = []
 
-    return f"{exito_texto}. {coop_texto}. Recomendación: {recomendacion}."
+# Guardamos la decisión actual
+if idea:
+    st.session_state.historial.append({
+        "Idea": idea,
+        "Impulso": impulso,
+        "Riesgo": riesgo,
+        "Apoyo": apoyo,
+        "Probabilidad Éxito": round(p_exito, 2),
+        "Recomendación": recomendacion
+    })
 
-mensaje_amigable = interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion)
+# Mostramos historial solo si hay más de 1 entrada
+if st.session_state.historial:
+    st.subheader("📜 Historial de decisiones (solo sesión activa)")
+    for i, h in enumerate(st.session_state.historial[-5:], 1):  # últimas 5
+        st.write(f"{i}. {h['Idea']} → {h['Recomendación']} (Éxito: {h['Probabilidad Éxito']})")
 
-# ---------------------
-# Mostrar resultados
-# ---------------------
-st.markdown("### Recomendación inmediata")
-st.markdown(f"**{mensaje_amigable}**")
-
-# ---------------------
-# Primer paso seguro
-# ---------------------
-accion = ""
-if recomendacion.startswith("🟢"):
-    st.markdown("### Primer paso seguro")
-    st.markdown("Definí **una acción pequeña y segura** que podés hacer primero:")
-    accion = st.text_input("Qué harías primero:", "")
-    if accion:
-        st.info(f"💡 Primer paso definido: {accion}")
-
-# ---------------------
-# Nota final
-# ---------------------
-st.warning("""
-⚠️ Nota importante:  
-Esta herramienta **no da consejos personales, legales, médicos ni de seguridad vial**.  
-Solo ofrece un **análisis de tu situación usando probabilidades y teoría de juegos** para ayudarte a pensar antes de actuar.  
-Los resultados reflejan un **escenario hipotético y simplificado**; tu juicio personal siempre es lo más importante.
-""")
+# --- Exportar decisión ---
+if st.session_state.historial:
+    last = st.session_state.historial[-1]
+    export_text = (
+        f"Idea: {last['Idea']}\n"
+        f"Impulso: {last['Impulso']}\n"
+        f"Riesgo: {last['Riesgo']}\n"
+        f"Apoyo: {last['Apoyo']}\n"
+        f"Probabilidad de Éxito: {last['Probabilidad Éxito']}\n"
+        f"Recomendación: {last['Recomendación']}\n"
+    )
+    st.download_button("💾 Exportar decisión a TXT", data=export_text, file_name="decision.txt")
