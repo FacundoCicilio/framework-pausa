@@ -3,14 +3,22 @@ from datetime import datetime
 import csv, os
 
 # ---------------------
-# Configuración
+# Configuración de la app
 # ---------------------
 st.set_page_config(page_title="💡 P.A.U.S.A. Amigable", page_icon="🧩", layout="centered")
 st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
-st.markdown("""
-Tomar decisiones bajo presión puede generar errores.  
-Esta herramienta te ayuda a **frenar el impulso y pensar de manera segura**.
+
+# ---------------------
+# Aviso de responsabilidad
+# ---------------------
+st.warning("""
+⚠️ Nota importante:  
+Esta herramienta **no da consejos personales, legales, médicos ni de seguridad vial**.  
+Solo ofrece un **análisis de tu situación usando probabilidades y teoría de juegos** para ayudarte a pensar antes de actuar.  
+Los resultados reflejan un **escenario hipotético y simplificado**; tu juicio personal siempre es lo más importante.
 """)
+
+st.markdown("Tomar decisiones bajo presión puede generar errores. Esta herramienta te ayuda a **frenar el impulso y pensar de manera segura**.")
 st.divider()
 
 # ---------------------
@@ -24,7 +32,7 @@ riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
 apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
 
 # ---------------------
-# SCORE ALERTA SIMPLE
+# Score de alerta interno
 # ---------------------
 score_alerta = sum([impulso, riesgo])
 if apoyo > 0.7:
@@ -53,7 +61,7 @@ else:
     recomendacion = "⚠️ Mejor pausar o replantear tu acción"
 
 # ---------------------
-# Traducción a lenguaje cotidiano
+# Interpretación amigable para el usuario
 # ---------------------
 def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
     # Probabilidad de éxito
@@ -111,7 +119,7 @@ if st.button("Registrar idea y decisión"):
     st.success("✅ Idea registrada en el historial")
 
 # ---------------------
-# Mini tablero de historial
+# Mini tablero de historial legible
 # ---------------------
 st.divider()
 st.markdown("## 🗂 Historial de ideas registradas")
