@@ -1,120 +1,78 @@
 import streamlit as st
-from datetime import datetime
+from openai import OpenAI
 
 # ---------------------
-# Configuración
+# CONFIGURACIÓN
 # ---------------------
-st.set_page_config(page_title="💡 P.A.U.S.A. PRO", page_icon="🧠", layout="centered")
+st.set_page_config(page_title="💡 P.A.U.S.A. IA", page_icon="🧠", layout="centered")
 
-st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
-st.markdown("Una herramienta para frenar el impulso y pensar con claridad antes de actuar.")
+st.title("💡 P.A.U.S.A. – Decisiones bajo presión (IA)")
+st.markdown("La IA analiza tu situación y te ayuda a reflexionar antes de actuar.")
 st.divider()
 
+# ⚠️ Poné tu API key en Streamlit secrets o directamente acá
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
 # ---------------------
-# FORMULARIO PRINCIPAL
+# FORMULARIO
 # ---------------------
 with st.form("form_pausa"):
-
-    st.markdown("### Tu situación")
-    idea = st.text_area("Escribí tu idea o lo que querés hacer:", "", height=100)
-
+    idea = st.text_area("Escribí tu idea o lo que querés hacer:", "", height=120)
     impulso = st.checkbox("Esto surge por impulso")
     riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
-    apoyo = st.slider(
-        "¿Qué tan probable es que otros apoyen tu acción?",
-        0.0, 1.0, 0.5, 0.05
-    )
+    apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
 
-    submit = st.form_submit_button("🔎 Analizar situación")
+    submit = st.form_submit_button("🔎 Analizar con IA")
 
 # ---------------------
-# RESULTADOS
+# PROCESAMIENTO
 # ---------------------
-if submit:
+if submit and idea:
 
-    # ---------------------
-    # MODELO AJUSTADO
-    # ---------------------
-    p_exito_base = 0.6
-
-    penalizacion = 0
-    if impulso:
-        penalizacion += 0.2
-    if riesgo:
-        penalizacion += 0.3
-
-    bonus_apoyo = 0.25 * apoyo
-
-    p_exito = p_exito_base - penalizacion + bonus_apoyo
-    p_exito = min(max(p_exito, 0.1), 0.9)
-
-    # ---------------------
-    # NIVEL DE RIESGO
-    # ---------------------
-    if p_exito < 0.35:
-        nivel = "🔴 Riesgo Alto"
-        recomendacion = "Mejor no actuar ahora. Tomate tiempo."
-    elif p_exito < 0.6:
-        nivel = "🟡 Precaución"
-        recomendacion = "Avanzá solo con un paso muy pequeño y seguro."
-    else:
-        nivel = "🟢 Condiciones Favorables"
-        recomendacion = "Podés avanzar, pero con prudencia."
-
-    # ---------------------
-    # MOSTRAR RESULTADOS
-    # ---------------------
     st.divider()
-    st.markdown("## Resultado del análisis")
+    st.markdown("## Análisis IA")
 
-    st.metric("Probabilidad estimada de resultado favorable", f"{int(p_exito*100)}%")
-    st.progress(p_exito)
+    # Prompt profesional y seguro
+    prompt = f"""
+    Analizá la siguiente situación de manera didáctica y prudente.
 
-    st.markdown(f"### {nivel}")
-    st.markdown(f"**{recomendacion}**")
+    Texto del usuario:
+    "{idea}"
 
-    # ---------------------
-    # INTERPRETACIÓN DIDÁCTICA
-    # ---------------------
-    st.markdown("### Interpretación")
+    Indicadores:
+    - Surge por impulso: {impulso}
+    - Puede afectar a alguien: {riesgo}
+    - Nivel de apoyo percibido: {apoyo}
 
-    explicacion = []
+    Tareas:
+    1. Detectar si hay impulsividad o riesgo.
+    2. Explicar brevemente posibles consecuencias.
+    3. Dar una recomendación prudente y clara.
+    4. Sugerir un primer paso pequeño y seguro.
 
-    if impulso:
-        explicacion.append("Detectamos que la decisión puede estar influida por impulso.")
-    if riesgo:
-        explicacion.append("La acción podría generar consecuencias negativas.")
-    if apoyo < 0.4:
-        explicacion.append("El nivel de apoyo percibido es bajo.")
-    elif apoyo > 0.7:
-        explicacion.append("Existe buen apoyo externo para la acción.")
+    Responder en tono claro, simple y responsable.
+    No dar consejos médicos, legales ni financieros específicos.
+    """
 
-    if not explicacion:
-        explicacion.append("No se detectaron señales fuertes de alerta.")
+    with st.spinner("Analizando..."):
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Sos un orientador cognitivo prudente y didáctico."},
+                {"role": "user", "content": prompt}
+            ]
+        )
 
-    for e in explicacion:
-        st.write("•", e)
+    respuesta_ia = response.choices[0].message.content
 
-    # ---------------------
-    # PRIMER PASO PRUDENTE (con botón propio)
-    # ---------------------
-    st.markdown("### Definí tu próximo paso prudente")
-
-    with st.form("form_accion"):
-        accion = st.text_input("¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?")
-        confirmar_accion = st.form_submit_button("✅ Confirmar paso")
-
-    if confirmar_accion and accion:
-        st.success(f"✔️ Paso definido: {accion}")
-        st.info("Sugerencia: intentá hacerlo en los próximos 10 minutos para evitar que el impulso vuelva.")
+    st.markdown(respuesta_ia)
 
 # ---------------------
-# NOTA LEGAL FINAL
+# NOTA LEGAL
 # ---------------------
 st.divider()
 st.warning("""
-⚠️ Nota importante:  
-Esta herramienta no brinda asesoramiento legal, médico, financiero ni psicológico.  
-El análisis es un modelo simplificado con fines reflexivos y educativos.  
+⚠️ Esta herramienta usa inteligencia artificial para generar reflexiones orientativas.
+No constituye asesoramiento profesional de ningún tipo.
 La decisión final siempre es responsabilidad del usuario.
 """)
