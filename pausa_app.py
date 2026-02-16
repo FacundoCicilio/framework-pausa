@@ -1,87 +1,108 @@
 import streamlit as st
 from datetime import datetime
 
+# -------------------------------------------------
+# CONFIGURACIÓN
+# -------------------------------------------------
+
 st.set_page_config(
     page_title="Framework P.A.U.S.A.",
     page_icon="🧠",
     layout="centered"
 )
 
-# ----------------------------
-# ESTILO SIMPLE MÁS LIMPIO
-# ----------------------------
+# -------------------------------------------------
+# ESTILO SUTIL
+# -------------------------------------------------
 
 st.markdown("""
 <style>
 .block-container {
     padding-top: 2rem;
 }
-.result-box {
-    padding: 1.5rem;
-    border-radius: 12px;
-    background-color: #f5f7fa;
+.section-title {
+    margin-top: 2rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------------------
+# -------------------------------------------------
 # HEADER
-# ----------------------------
+# -------------------------------------------------
 
 st.title("🧠 Framework P.A.U.S.A.")
-st.markdown("### De impulso a estrategia en 30 segundos")
+st.markdown("### De impulso a estrategia en menos de 30 segundos")
 
 st.markdown("""
 Tomar decisiones bajo presión suele generar errores evitables.  
-Este framework te ayuda a frenar el impulso y pensar mejor.
+Este pequeño motor te ayuda a frenar el impulso y pensar mejor.
 """)
 
 st.divider()
 
-# ----------------------------
+# -------------------------------------------------
 # EVALUACIÓN
-# ----------------------------
+# -------------------------------------------------
 
 st.markdown("## 📝 Evaluación rápida")
+st.markdown("Marcá lo que aplique en tu situación actual:")
 
 presion = st.checkbox("¿Estoy siendo apurado por alguien?")
-st.caption("La presión externa reduce claridad.")
+st.caption("La presión externa reduce claridad mental.")
 
 riesgo = st.checkbox("¿Hay riesgo legal o estoy usando algo que no es mío?")
 st.caption("Si hay consecuencias formales posibles, atención.")
 
 exposicion = st.checkbox("¿Me incomodaría que me filmen haciendo esto?")
-st.caption("Pensá en tu yo futuro.")
+st.caption("Pensá en tu versión futura viendo esta decisión.")
 
 identidad = st.checkbox("¿Esto NO es coherente con quien quiero ser?")
 st.caption("Las decisiones pequeñas construyen identidad.")
 
 urgencia = st.checkbox("¿No es realmente urgente decidir ahora?")
-st.caption("La urgencia artificial es una trampa común.")
+st.caption("La urgencia artificial suele generar errores.")
 
 riesgo_score = sum([presion, riesgo, exposicion, identidad, urgencia])
 
 st.divider()
 
-# ----------------------------
+# -------------------------------------------------
 # RESULTADO
-# ----------------------------
+# -------------------------------------------------
 
 st.markdown("## 📊 Resultado")
 
 if riesgo_score == 0:
     st.info("👋 Marcá al menos una casilla para activar el análisis.")
 else:
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Score visible
     st.markdown(f"### Score de alerta: **{riesgo_score} / 5**")
 
-    if riesgo_score >= 2:
+    # Barra visual
+    st.progress(riesgo_score / 5)
+
+    # Nivel textual
+    if riesgo_score <= 1:
+        nivel = "🟢 Riesgo Bajo"
+    elif riesgo_score == 2:
+        nivel = "🟡 Riesgo Moderado"
+    else:
+        nivel = "🔴 Riesgo Alto"
+
+    st.markdown(f"**Nivel estimado:** {nivel}")
+
+    st.divider()
+
+    # Recomendación principal
+    if riesgo_score >= 3:
         st.error("🔴 Recomendación: NO AVANZAR")
-        st.write("Tomá distancia. Replanteá la decisión.")
-    elif riesgo_score == 1:
+        st.write("Tomá distancia. Replanteá la decisión con mayor claridad.")
+    elif riesgo_score == 2:
         st.warning("🟡 Recomendación: PAUSA 10 MINUTOS")
-        st.write("Dale tiempo al sistema racional.")
+        st.write("Dale tiempo al sistema racional antes de actuar.")
     else:
         st.success("🟢 Recomendación: OK PARA AVANZAR")
         st.write("No se detectan alertas significativas.")
@@ -90,9 +111,9 @@ else:
 
     st.divider()
 
-    # ----------------------------
+    # -------------------------------------------------
     # MODO PROBABILIDAD
-    # ----------------------------
+    # -------------------------------------------------
 
     st.markdown("## 🔮 Modo Probabilidad (opcional)")
 
@@ -116,9 +137,8 @@ else:
 
         st.markdown("### 📈 Estimación ajustada")
 
-        st.write(
-            f"Probabilidad estimada de que esta decisión salga mal: **{round(posterior*100,1)}%**"
-        )
+        prob = round(posterior * 100, 1)
+        st.markdown(f"Probabilidad estimada de que salga mal: **{prob}%**")
 
         if posterior > 0.6:
             st.error("Alta probabilidad. No parece buena idea.")
@@ -129,9 +149,9 @@ else:
 
 st.divider()
 
-# ----------------------------
+# -------------------------------------------------
 # IDEA CENTRAL
-# ----------------------------
+# -------------------------------------------------
 
 st.markdown("## 📌 Idea central")
 
@@ -139,5 +159,6 @@ st.markdown("""
 La mayoría de los errores no vienen de falta de inteligencia.  
 Vienen de decisiones tomadas bajo presión social y urgencia artificial.  
 
-Este es solo un pequeño freno racional antes del impulso.
+Esto no reemplaza tu criterio.  
+Solo introduce una pausa racional antes del impulso.
 """)
