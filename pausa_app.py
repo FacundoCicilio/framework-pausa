@@ -89,27 +89,39 @@ if recomendacion.startswith("🟢"):
         st.info(f"💡 Primer paso definido: {accion}")
 
 # ---------------------
-# Enviar idea por mail (opcional)
+# Registro opcional y envío a tu mail
 # ---------------------
 st.divider()
-st.markdown("### Enviar tu idea por email (opcional)")
-email_destino = st.text_input("Ingresá tu email para recibir la idea:")
-if st.button("Enviar idea por email") and email_destino:
-    try:
-        msg = EmailMessage()
-        msg.set_content(f"Idea: {idea}\nImpulso: {impulso}\nRiesgo: {riesgo}\nApoyo: {apoyo}\nInterpretación: {mensaje_amigable}\nPrimer paso: {accion}")
-        msg["Subject"] = "Registro de tu idea - Framework P.A.U.S.A."
-        msg["From"] = "TU_EMAIL@gmail.com"   # <-- reemplazar con tu email
-        msg["To"] = email_destino
+st.markdown("### Registrar tu comentario (opcional)")
+registrar = st.checkbox("Quiero registrar mi idea/comentario y enviarlo al autor")
+if registrar:
+    if st.button("Enviar ahora"):
+        try:
+            msg = EmailMessage()
+            contenido = f"""
+Nueva idea registrada en Framework P.A.U.S.A.
 
-        # Usar SMTP (ejemplo Gmail)
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-        server.login("TU_EMAIL@gmail.com", "TU_CONTRASEÑA")  # <-- reemplazar
-        server.send_message(msg)
-        server.quit()
-        st.success("✅ Idea enviada por email correctamente")
-    except Exception as e:
-        st.error(f"❌ No se pudo enviar el email: {e}")
+Idea/Comentario: {idea}
+Impulso: {impulso}
+Riesgo: {riesgo}
+Apoyo: {apoyo}
+Interpretación: {mensaje_amigable}
+Primer paso: {accion}
+Fecha/Hora: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+"""
+            msg.set_content(contenido)
+            msg["Subject"] = "Nueva idea registrada - Framework P.A.U.S.A."
+            msg["From"] = "TU_EMAIL@gmail.com"  # <-- reemplazar con tu email
+            msg["To"] = "cuentasnacionalesgrana@gmail.com"
+
+            # SMTP seguro (Gmail ejemplo)
+            server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+            server.login("TU_EMAIL@gmail.com", "TU_CONTRASEÑA")  # <-- reemplazar con tu contraseña o app password
+            server.send_message(msg)
+            server.quit()
+            st.success("✅ Tu idea fue enviada correctamente")
+        except Exception as e:
+            st.error(f"❌ No se pudo enviar el email: {e}")
 
 # ---------------------
 # Nota final
