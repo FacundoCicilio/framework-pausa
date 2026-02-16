@@ -1,44 +1,67 @@
 import streamlit as st
 from datetime import datetime
 
+# -------------------------------------------------
+# CONFIGURACIÓN
+# -------------------------------------------------
+
 st.set_page_config(
     page_title="Framework P.A.U.S.A.",
     page_icon="🧠",
     layout="centered"
 )
 
+# -------------------------------------------------
+# HEADER
+# -------------------------------------------------
+
 st.title("🧠 Framework P.A.U.S.A.")
-st.subheader("Protocolo Algorítmico de Urgencias Sociales y Acción")
+st.markdown("## Protocolo Algorítmico de Urgencias Sociales y Acción")
 
 st.markdown("""
 Tomar decisiones bajo presión suele generar errores evitables.  
 Este framework te ayuda a frenar el impulso y pensar mejor.  
-Tarda menos de 30 segundos.
+⏱ Tarda menos de 30 segundos.
 """)
 
 st.divider()
 
-# ----------------------------
-# CHECKLIST
-# ----------------------------
+# -------------------------------------------------
+# EVALUACIÓN
+# -------------------------------------------------
 
-st.markdown("### Evaluación rápida")
+st.markdown("# 📝 Evaluación rápida")
+
+st.markdown("Marcá lo que aplique en tu situación actual:")
 
 presion = st.checkbox("1️⃣ ¿Estoy siendo apurado por alguien?")
-riesgo = st.checkbox("2️⃣ ¿Hay riesgo legal o estoy usando algo que no es mío?")
-exposicion = st.checkbox("3️⃣ ¿Me incomodaría que me filmen haciendo esto?")
-identidad = st.checkbox("4️⃣ ¿Esto NO es coherente con quien quiero ser?")
-urgencia = st.checkbox("5️⃣ ¿No es realmente urgente decidir ahora?")
+st.caption("Presión externa suele nublar el criterio.")
 
-# ----------------------------
-# CÁLCULO AUTOMÁTICO
-# ----------------------------
+riesgo = st.checkbox("2️⃣ ¿Hay riesgo legal o estoy usando algo que no es mío?")
+st.caption("Si hay consecuencias formales posibles, atención.")
+
+exposicion = st.checkbox("3️⃣ ¿Me incomodaría que me filmen haciendo esto?")
+st.caption("Buena prueba de coherencia futura.")
+
+identidad = st.checkbox("4️⃣ ¿Esto NO es coherente con quien quiero ser?")
+st.caption("Decisiones pequeñas construyen identidad.")
+
+urgencia = st.checkbox("5️⃣ ¿No es realmente urgente decidir ahora?")
+st.caption("La urgencia artificial es un clásico generador de errores.")
+
+# -------------------------------------------------
+# CÁLCULO
+# -------------------------------------------------
 
 riesgo_score = sum([presion, riesgo, exposicion, identidad, urgencia])
 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 st.divider()
-st.markdown("## Resultado")
+
+st.markdown("# 📊 Resultado")
+
+# Score visible primero
+st.markdown(f"### Score de alerta: **{riesgo_score} / 5**")
 
 if riesgo_score >= 2:
     st.error("🔴 Recomendación: NO AVANZAR")
@@ -50,17 +73,22 @@ else:
     st.success("🟢 Recomendación: OK PARA AVANZAR")
     st.markdown("No se detectan alertas significativas.")
 
-st.markdown(f"**Score de alerta:** {riesgo_score} / 5")
 st.caption(f"Evaluado el: {timestamp}")
 
 st.divider()
 
-# ----------------------------
+# -------------------------------------------------
 # MODO PROBABILIDAD
-# ----------------------------
+# -------------------------------------------------
 
-st.markdown("### 🔮 Modo Probabilidad (opcional y curioso)")
-activar_bayes = st.checkbox("Quiero estimar la probabilidad de que salga mal")
+st.markdown("# 🔮 Modo Probabilidad (opcional y curioso)")
+
+st.markdown("""
+Si querés ir un paso más allá, podés estimar la probabilidad
+de que esta decisión salga mal usando tu experiencia previa.
+""")
+
+activar_bayes = st.checkbox("Quiero estimar la probabilidad")
 
 if activar_bayes:
 
@@ -78,7 +106,7 @@ if activar_bayes:
         (prior * evidencia) + ((1 - prior) * (1 - evidencia))
     )
 
-    st.markdown("### 📊 Estimación ajustada")
+    st.markdown("### 📈 Estimación ajustada")
 
     st.write(
         f"Probabilidad estimada de que esta decisión salga mal: **{round(posterior*100,1)}%**"
@@ -93,9 +121,13 @@ if activar_bayes:
 
 st.divider()
 
-st.markdown("""
-### 📌 Idea central
+# -------------------------------------------------
+# IDEA CENTRAL
+# -------------------------------------------------
 
+st.markdown("# 📌 Idea central")
+
+st.markdown("""
 La mayoría de los errores no vienen de falta de inteligencia.  
 Vienen de decisiones tomadas bajo presión social y urgencia artificial.  
 
