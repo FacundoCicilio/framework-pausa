@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
-import csv, os
+import smtplib
+from email.message import EmailMessage
 
 # ---------------------
 # Configuración de la app
@@ -51,7 +52,7 @@ else:
     recomendacion = "⚠️ Mejor pausar o replantear tu acción"
 
 # ---------------------
-# Interpretación amigable para el usuario
+# Interpretación amigable
 # ---------------------
 def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
     if p_exito < 0.4:
@@ -71,13 +72,13 @@ def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
 mensaje_amigable = interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion)
 
 # ---------------------
-# Mostrar resultados al usuario
+# Mostrar resultados
 # ---------------------
 st.markdown("### Recomendación inmediata")
 st.markdown(f"**{mensaje_amigable}**")
 
 # ---------------------
-# Primer paso seguro (opcional)
+# Primer paso seguro
 # ---------------------
 accion = ""
 if recomendacion.startswith("🟢"):
@@ -88,37 +89,30 @@ if recomendacion.startswith("🟢"):
         st.info(f"💡 Primer paso definido: {accion}")
 
 # ---------------------
-# Registro automático en CSV
-# ---------------------
-archivo_csv = "registro_ideas.csv"
-
-def guardar():
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if not os.path.exists(archivo_csv):
-        with open(archivo_csv,"w",newline="",encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Fecha","Idea","Impulso","Riesgo","Apoyo","Interpretación","Primer paso"])
-    with open(archivo_csv,"a",newline="",encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([timestamp, idea, impulso, riesgo, f"{apoyo:.2f}", mensaje_amigable, accion])
-
-if st.button("Registrar idea y decisión"):
-    guardar()
-    st.success("✅ Idea registrada en el historial")
-
-# ---------------------
-# Mini tablero de historial legible
+# Enviar idea por mail (opcional)
 # ---------------------
 st.divider()
-st.markdown("## 🗂 Historial de ideas registradas")
-if os.path.exists(archivo_csv):
-    with open(archivo_csv,"r",encoding="utf-8") as f:
-        st.text(f.read())
-else:
-    st.info("Aún no hay ideas registradas.")
+st.markdown("### Enviar tu idea por email (opcional)")
+email_destino = st.text_input("Ingresá tu email para recibir la idea:")
+if st.button("Enviar idea por email") and email_destino:
+    try:
+        msg = EmailMessage()
+        msg.set_content(f"Idea: {idea}\nImpulso: {impulso}\nRiesgo: {riesgo}\nApoyo: {apoyo}\nInterpretación: {mensaje_amigable}\nPrimer paso: {accion}")
+        msg["Subject"] = "Registro de tu idea - Framework P.A.U.S.A."
+        msg["From"] = "TU_EMAIL@gmail.com"   # <-- reemplazar con tu email
+        msg["To"] = email_destino
+
+        # Usar SMTP (ejemplo Gmail)
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+        server.login("TU_EMAIL@gmail.com", "TU_CONTRASEÑA")  # <-- reemplazar
+        server.send_message(msg)
+        server.quit()
+        st.success("✅ Idea enviada por email correctamente")
+    except Exception as e:
+        st.error(f"❌ No se pudo enviar el email: {e}")
 
 # ---------------------
-# Aviso de responsabilidad al final
+# Nota final
 # ---------------------
 st.warning("""
 ⚠️ Nota importante:  
