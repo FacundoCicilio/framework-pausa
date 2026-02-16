@@ -16,7 +16,7 @@ if "resultado" not in st.session_state:
     st.session_state.resultado = {}
 
 # ---------------------
-# Filtro de contenido peligroso
+# Filtro básico de contenido peligroso
 # ---------------------
 def contenido_peligroso(texto):
     palabras_riesgo = [
@@ -24,55 +24,63 @@ def contenido_peligroso(texto):
         "golpear", "atacar", "explosivo",
         "envenenar", "suicidar", "violencia"
     ]
-
     texto = texto.lower()
-
-    for palabra in palabras_riesgo:
-        if palabra in texto:
-            return True
-
-    return False
-
+    return any(p in texto for p in palabras_riesgo)
 
 # ---------------------
-# Función didáctica
+# Evaluación estratégica del paso
 # ---------------------
-def generar_interpretacion(idea, p_exito, nivel, impulso, riesgo, apoyo):
+def evaluar_paso(accion, nivel):
 
-    contexto = f"""
-Situación:
-{idea}
+    accion_lower = accion.lower()
 
-Probabilidad estimada: {int(p_exito*100)}%
-Nivel: {nivel}
-Impulso: {impulso}
-Riesgo: {riesgo}
-Apoyo: {apoyo}
+    aumenta_opciones = any(p in accion_lower for p in [
+        "buscar", "explorar", "averiguar",
+        "analizar", "investigar", "hablar",
+        "preguntar", "actualizar cv"
+    ])
 
-Redactá una interpretación estratégica y reflexiva.
-No menciones inteligencia artificial ni modelos matemáticos.
-Explicá qué actitud conviene adoptar.
-"""
+    irreversible = any(p in accion_lower for p in [
+        "renunciar", "denunciar", "terminar",
+        "cortar relación", "demandar"
+    ])
 
-    API_URL = "https://api-inference.huggingface.co/models/gpt2"
-    payload = {"inputs": contexto}
+    confrontativo = any(p in accion_lower for p in [
+        "enfrentar", "reclamar", "exigir"
+    ])
 
-    try:
-        response = requests.post(API_URL, json=payload, timeout=15)
-        data = response.json()
+    if irreversible:
+        return "⚠ Paso de alto impacto: puede ser difícil de revertir. Evaluá consecuencias antes de ejecutarlo."
 
-        if isinstance(data, list) and "generated_text" in data[0]:
-            texto = data[0]["generated_text"]
-            return texto.replace(contexto, "").strip()
+    if aumenta_opciones:
+        if nivel == "Precaución":
+            return "✔ Estrategia coherente: aumenta tus opciones sin cerrar caminos. Es consistente con un escenario de incertidumbre."
+        elif nivel == "Condiciones Favorables":
+            return "✔ Buen movimiento estratégico: fortalece tu posición manteniendo flexibilidad."
         else:
-            return "El resultado sugiere frenar la acción inmediata y reevaluar la estrategia antes de avanzar."
+            return "✔ Paso prudente: preserva opcionalidad en un contexto de riesgo."
 
-    except:
-        return "El resultado sugiere frenar la acción inmediata y reevaluar la estrategia antes de avanzar."
+    if confrontativo and nivel == "Riesgo Alto":
+        return "⚠ Movimiento confrontativo en contexto riesgoso. Puede escalar el conflicto."
+
+    return "Movimiento neutral. Evaluá cómo impacta tu poder de negociación y tus alternativas futuras."
+
+# ---------------------
+# Interpretación didáctica
+# ---------------------
+def generar_interpretacion(idea, p_exito, nivel):
+
+    if nivel == "Riesgo Alto":
+        return "El escenario presenta baja probabilidad de resultado favorable. Conviene pausar y evitar decisiones irreversibles."
+
+    if nivel == "Precaución":
+        return "Existe incertidumbre relevante. Las decisiones que preserven opciones y reduzcan exposición son estratégicamente más sólidas."
+
+    return "Las condiciones son relativamente favorables. Aun así, mantener prudencia mejora la estabilidad del resultado."
 
 
 # ---------------------
-# TÍTULO
+# Título
 # ---------------------
 st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
 st.markdown(
@@ -81,12 +89,12 @@ st.markdown(
 st.divider()
 
 # ---------------------
-# FORMULARIO PRINCIPAL
+# Formulario principal
 # ---------------------
 with st.form("form_pausa"):
 
     st.markdown("### Tu situación")
-    idea = st.text_area("Escribí tu idea o lo que querés hacer:", "", height=100)
+    idea = st.text_area("Escribí tu idea o lo que querés hacer:", "", height=150)
 
     impulso = st.checkbox("Esto surge por impulso")
     riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
@@ -99,24 +107,21 @@ with st.form("form_pausa"):
     submit = st.form_submit_button("🔎 Evaluar decisión")
 
 # ---------------------
-# BLOQUEO PREVENTIVO
+# Bloqueo preventivo
 # ---------------------
 if submit and contenido_peligroso(idea):
     st.error("La acción planteada implica daño o ilegalidad.")
-    st.warning(
-        "Esta herramienta no puede analizar situaciones que involucren violencia o daño directo. "
-        "Te recomendamos tomar distancia inmediata y buscar ayuda si estás atravesando enojo intenso."
-    )
+    st.warning("La herramienta no puede analizar este tipo de situaciones.")
     st.stop()
 
 # ---------------------
-# CÁLCULO DEL MODELO
+# Cálculo del modelo
 # ---------------------
 if submit:
 
     p_exito_base = 0.6
-
     penalizacion = 0
+
     if impulso:
         penalizacion += 0.2
     if riesgo:
@@ -129,7 +134,7 @@ if submit:
 
     if p_exito < 0.35:
         nivel = "Riesgo Alto"
-        recomendacion = "Conviene no actuar ahora. Replanteá la estrategia."
+        recomendacion = "Conviene no actuar ahora."
     elif p_exito < 0.6:
         nivel = "Precaución"
         recomendacion = "Avanzá solo con un paso pequeño y reversible."
@@ -141,16 +146,13 @@ if submit:
         "idea": idea,
         "p_exito": p_exito,
         "nivel": nivel,
-        "recomendacion": recomendacion,
-        "impulso": impulso,
-        "riesgo": riesgo,
-        "apoyo": apoyo
+        "recomendacion": recomendacion
     }
 
     st.session_state.analisis_realizado = True
 
 # ---------------------
-# MOSTRAR RESULTADOS
+# Mostrar resultados
 # ---------------------
 if st.session_state.analisis_realizado:
 
@@ -159,54 +161,21 @@ if st.session_state.analisis_realizado:
     st.divider()
     st.markdown("## Resultado del análisis estratégico")
 
-    st.metric(
-        "Probabilidad estimada de resultado favorable",
-        f"{int(r['p_exito']*100)}%"
-    )
-
+    st.metric("Probabilidad estimada de resultado favorable", f"{int(r['p_exito']*100)}%")
     st.progress(r["p_exito"])
 
     st.markdown(f"### {r['nivel']}")
     st.markdown(f"**{r['recomendacion']}**")
 
-    # Factores
-    st.markdown("### Factores detectados")
-
-    if r["impulso"]:
-        st.write("• La decisión presenta señales de impulso.")
-    if r["riesgo"]:
-        st.write("• Existen posibles consecuencias negativas para terceros.")
-    if r["apoyo"] < 0.4:
-        st.write("• El apoyo externo es bajo, lo que reduce estabilidad estratégica.")
-    elif r["apoyo"] > 0.7:
-        st.write("• El apoyo externo es sólido, lo que mejora la posición estratégica.")
-
-    if not r["impulso"] and not r["riesgo"]:
-        st.write("• No se detectan señales críticas inmediatas.")
-
-    # Interpretación ampliada
-    st.markdown("### Interpretación reflexiva")
-
-    with st.spinner("Generando análisis reflexivo..."):
-        interpretacion = generar_interpretacion(
-            r["idea"],
-            r["p_exito"],
-            r["nivel"],
-            r["impulso"],
-            r["riesgo"],
-            r["apoyo"]
-        )
-
-    st.markdown(interpretacion)
+    st.markdown("### Interpretación")
+    st.write(generar_interpretacion(r["idea"], r["p_exito"], r["nivel"]))
 
     # ---------------------
-    # PASO ESTRATÉGICO
+    # Paso estratégico
     # ---------------------
     st.markdown("### Definí tu próximo paso prudente")
 
-    accion = st.text_input(
-        "¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?"
-    )
+    accion = st.text_input("¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?")
 
     if st.button("Confirmar paso estratégico"):
 
@@ -214,32 +183,17 @@ if st.session_state.analisis_realizado:
             st.warning("Definí un paso antes de confirmar.")
 
         elif contenido_peligroso(accion):
-            st.error("El paso propuesto implica daño o ilegalidad. No puede validarse.")
-            st.warning(
-                "Tomá distancia de la situación. Si sentís enojo intenso o pensamientos agresivos, "
-                "considerá hablar con alguien de confianza o buscar ayuda profesional."
-            )
-
-        elif r["nivel"] == "Riesgo Alto":
-            st.warning(
-                "Dado el nivel de riesgo alto, se recomienda no ejecutar ninguna acción inmediata. "
-                "Lo más prudente es pausar y reevaluar más adelante."
-            )
+            st.error("El paso propuesto implica daño o ilegalidad.")
+            st.stop()
 
         else:
             st.success(f"✔ Paso definido: {accion}")
 
-            if r["nivel"] == "Condiciones Favorables":
-                st.info(
-                    "Podés ejecutarlo pronto para evitar que el impulso vuelva a interferir."
-                )
-            else:
-                st.info(
-                    "Avanzá con cautela y evaluá las consecuencias antes de ejecutarlo."
-                )
+            evaluacion = evaluar_paso(accion, r["nivel"])
+            st.info(evaluacion)
 
 # ---------------------
-# NOTA FINAL
+# Nota final
 # ---------------------
 st.divider()
 st.warning("""
