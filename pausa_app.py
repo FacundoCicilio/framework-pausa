@@ -6,7 +6,9 @@ import requests
 # ---------------------
 st.set_page_config(page_title="💡 P.A.U.S.A. PRO", page_icon="🧠", layout="centered")
 
+# ---------------------
 # Estado persistente
+# ---------------------
 if "analisis_realizado" not in st.session_state:
     st.session_state.analisis_realizado = False
 
@@ -14,16 +16,26 @@ if "resultado" not in st.session_state:
     st.session_state.resultado = {}
 
 # ---------------------
-# TÍTULO
+# Filtro de contenido peligroso
 # ---------------------
-st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
-st.markdown(
-    "Modelo reflexivo basado en probabilidad y análisis estratégico para frenar el impulso y decidir con claridad."
-)
-st.divider()
+def contenido_peligroso(texto):
+    palabras_riesgo = [
+        "matar", "arma", "disparar", "cuchillo",
+        "golpear", "atacar", "explosivo",
+        "envenenar", "suicidar", "violencia"
+    ]
+
+    texto = texto.lower()
+
+    for palabra in palabras_riesgo:
+        if palabra in texto:
+            return True
+
+    return False
+
 
 # ---------------------
-# FUNCIÓN DIDÁCTICA
+# Función didáctica
 # ---------------------
 def generar_interpretacion(idea, p_exito, nivel, impulso, riesgo, apoyo):
 
@@ -37,8 +49,8 @@ Impulso: {impulso}
 Riesgo: {riesgo}
 Apoyo: {apoyo}
 
-Redactá una interpretación clara, estratégica y reflexiva.
-No menciones modelos matemáticos ni inteligencia artificial.
+Redactá una interpretación estratégica y reflexiva.
+No menciones inteligencia artificial ni modelos matemáticos.
 Explicá qué actitud conviene adoptar.
 """
 
@@ -53,11 +65,20 @@ Explicá qué actitud conviene adoptar.
             texto = data[0]["generated_text"]
             return texto.replace(contexto, "").strip()
         else:
-            return "El resultado sugiere actuar con prudencia y evaluar estratégicamente el siguiente movimiento."
+            return "El resultado sugiere frenar la acción inmediata y reevaluar la estrategia antes de avanzar."
 
     except:
-        return "El resultado sugiere actuar con prudencia y evaluar estratégicamente el siguiente movimiento."
+        return "El resultado sugiere frenar la acción inmediata y reevaluar la estrategia antes de avanzar."
 
+
+# ---------------------
+# TÍTULO
+# ---------------------
+st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
+st.markdown(
+    "Modelo reflexivo basado en probabilidad y análisis estratégico para ayudarte a frenar el impulso y decidir con claridad."
+)
+st.divider()
 
 # ---------------------
 # FORMULARIO PRINCIPAL
@@ -76,6 +97,17 @@ with st.form("form_pausa"):
     )
 
     submit = st.form_submit_button("🔎 Evaluar decisión")
+
+# ---------------------
+# BLOQUEO PREVENTIVO
+# ---------------------
+if submit and contenido_peligroso(idea):
+    st.error("La acción planteada implica daño o ilegalidad.")
+    st.warning(
+        "Esta herramienta no puede analizar situaciones que involucren violencia o daño directo. "
+        "Te recomendamos tomar distancia inmediata y buscar ayuda si estás atravesando enojo intenso."
+    )
+    st.stop()
 
 # ---------------------
 # CÁLCULO DEL MODELO
@@ -103,9 +135,8 @@ if submit:
         recomendacion = "Avanzá solo con un paso pequeño y reversible."
     else:
         nivel = "Condiciones Favorables"
-        recomendacion = "Podés avanzar, manteniendo prudencia."
+        recomendacion = "Podés avanzar con prudencia."
 
-    # Guardar resultados
     st.session_state.resultado = {
         "idea": idea,
         "p_exito": p_exito,
@@ -119,7 +150,7 @@ if submit:
     st.session_state.analisis_realizado = True
 
 # ---------------------
-# MOSTRAR RESULTADOS (persistentes)
+# MOSTRAR RESULTADOS
 # ---------------------
 if st.session_state.analisis_realizado:
 
@@ -138,7 +169,7 @@ if st.session_state.analisis_realizado:
     st.markdown(f"### {r['nivel']}")
     st.markdown(f"**{r['recomendacion']}**")
 
-    # Interpretación básica estructural
+    # Factores
     st.markdown("### Factores detectados")
 
     if r["impulso"]:
@@ -178,11 +209,34 @@ if st.session_state.analisis_realizado:
     )
 
     if st.button("Confirmar paso estratégico"):
-        if accion.strip() != "":
-            st.success(f"✔ Paso definido: {accion}")
-            st.info(
-                "Sugerencia: realizalo pronto para evitar que el impulso vuelva a dominar la decisión."
+
+        if accion.strip() == "":
+            st.warning("Definí un paso antes de confirmar.")
+
+        elif contenido_peligroso(accion):
+            st.error("El paso propuesto implica daño o ilegalidad. No puede validarse.")
+            st.warning(
+                "Tomá distancia de la situación. Si sentís enojo intenso o pensamientos agresivos, "
+                "considerá hablar con alguien de confianza o buscar ayuda profesional."
             )
+
+        elif r["nivel"] == "Riesgo Alto":
+            st.warning(
+                "Dado el nivel de riesgo alto, se recomienda no ejecutar ninguna acción inmediata. "
+                "Lo más prudente es pausar y reevaluar más adelante."
+            )
+
+        else:
+            st.success(f"✔ Paso definido: {accion}")
+
+            if r["nivel"] == "Condiciones Favorables":
+                st.info(
+                    "Podés ejecutarlo pronto para evitar que el impulso vuelva a interferir."
+                )
+            else:
+                st.info(
+                    "Avanzá con cautela y evaluá las consecuencias antes de ejecutarlo."
+                )
 
 # ---------------------
 # NOTA FINAL
