@@ -11,7 +11,7 @@ st.markdown("Una herramienta para frenar el impulso y pensar con claridad antes 
 st.divider()
 
 # ---------------------
-# FORMULARIO (mejor UX en celular)
+# FORMULARIO PRINCIPAL
 # ---------------------
 with st.form("form_pausa"):
 
@@ -20,17 +20,20 @@ with st.form("form_pausa"):
 
     impulso = st.checkbox("Esto surge por impulso")
     riesgo = st.checkbox("Podría afectar a alguien o generar problemas")
-    apoyo = st.slider("¿Qué tan probable es que otros apoyen tu acción?", 0.0, 1.0, 0.5, 0.05)
+    apoyo = st.slider(
+        "¿Qué tan probable es que otros apoyen tu acción?",
+        0.0, 1.0, 0.5, 0.05
+    )
 
     submit = st.form_submit_button("🔎 Analizar situación")
 
 # ---------------------
-# CÁLCULO SOLO SI SE ENVÍA
+# RESULTADOS
 # ---------------------
 if submit:
 
     # ---------------------
-    # MODELO AJUSTADO (coherente)
+    # MODELO AJUSTADO
     # ---------------------
     p_exito_base = 0.6
 
@@ -59,7 +62,7 @@ if submit:
         recomendacion = "Podés avanzar, pero con prudencia."
 
     # ---------------------
-    # RESULTADOS
+    # MOSTRAR RESULTADOS
     # ---------------------
     st.divider()
     st.markdown("## Resultado del análisis")
@@ -71,8 +74,10 @@ if submit:
     st.markdown(f"**{recomendacion}**")
 
     # ---------------------
-    # Interpretación didáctica
+    # INTERPRETACIÓN DIDÁCTICA
     # ---------------------
+    st.markdown("### Interpretación")
+
     explicacion = []
 
     if impulso:
@@ -87,21 +92,24 @@ if submit:
     if not explicacion:
         explicacion.append("No se detectaron señales fuertes de alerta.")
 
-    st.markdown("### Interpretación")
     for e in explicacion:
         st.write("•", e)
 
     # ---------------------
-    # PRIMER PASO SEGURO (siempre aparece)
+    # PRIMER PASO PRUDENTE (con botón propio)
     # ---------------------
     st.markdown("### Definí tu próximo paso prudente")
-    accion = st.text_input("¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?")
 
-    if accion:
-        st.info(f"✔️ Paso definido: {accion}")
+    with st.form("form_accion"):
+        accion = st.text_input("¿Cuál es el paso más pequeño y seguro que podrías hacer ahora?")
+        confirmar_accion = st.form_submit_button("✅ Confirmar paso")
+
+    if confirmar_accion and accion:
+        st.success(f"✔️ Paso definido: {accion}")
+        st.info("Sugerencia: intentá hacerlo en los próximos 10 minutos para evitar que el impulso vuelva.")
 
 # ---------------------
-# Nota legal al final
+# NOTA LEGAL FINAL
 # ---------------------
 st.divider()
 st.warning("""
