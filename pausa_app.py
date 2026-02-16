@@ -6,13 +6,13 @@ from datetime import datetime
 # -------------------------------------------------
 
 st.set_page_config(
-    page_title="Framework P.A.U.S.A.",
+    page_title="P.A.U.S.A. Protocol",
     page_icon="🧠",
     layout="centered"
 )
 
 # -------------------------------------------------
-# ESTILO SUTIL
+# ESTILO
 # -------------------------------------------------
 
 st.markdown("""
@@ -20,22 +20,25 @@ st.markdown("""
 .block-container {
     padding-top: 2rem;
 }
-.section-title {
-    margin-top: 2rem;
+.version-tag {
+    color: gray;
+    font-size: 0.9rem;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------
-# HEADER
+# HEADER IDENTIDAD
 # -------------------------------------------------
 
-st.title("🧠 Framework P.A.U.S.A.")
-st.markdown("### De impulso a estrategia en menos de 30 segundos")
+st.title("🧠 P.A.U.S.A.")
+st.markdown("### Presión – Apuro – Urgencia – Señal – Acción")
+
+st.markdown('<div class="version-tag">v1.0 — Motor básico de decisión bajo presión</div>', unsafe_allow_html=True)
 
 st.markdown("""
-Tomar decisiones bajo presión suele generar errores evitables.  
-Este pequeño motor te ayuda a frenar el impulso y pensar mejor.
+Un micro-sistema para reducir errores cuando la presión social,
+la urgencia o el impulso intentan decidir por vos.
 """)
 
 st.divider()
@@ -73,18 +76,14 @@ st.divider()
 st.markdown("## 📊 Resultado")
 
 if riesgo_score == 0:
-    st.info("👋 Marcá al menos una casilla para activar el análisis.")
+    st.info("Marcá al menos una casilla para activar el análisis.")
 else:
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Score visible
     st.markdown(f"### Score de alerta: **{riesgo_score} / 5**")
-
-    # Barra visual
     st.progress(riesgo_score / 5)
 
-    # Nivel textual
     if riesgo_score <= 1:
         nivel = "🟢 Riesgo Bajo"
     elif riesgo_score == 2:
@@ -96,7 +95,6 @@ else:
 
     st.divider()
 
-    # Recomendación principal
     if riesgo_score >= 3:
         st.error("🔴 Recomendación: NO AVANZAR")
         st.write("Tomá distancia. Replanteá la decisión con mayor claridad.")
@@ -150,15 +148,31 @@ else:
 st.divider()
 
 # -------------------------------------------------
-# IDEA CENTRAL
+# MANIFIESTO
 # -------------------------------------------------
 
-st.markdown("## 📌 Idea central")
+st.markdown("## 📌 Manifiesto")
 
 st.markdown("""
 La mayoría de los errores no vienen de falta de inteligencia.  
-Vienen de decisiones tomadas bajo presión social y urgencia artificial.  
+Vienen de decisiones tomadas bajo presión social y urgencia artificial.
 
-Esto no reemplaza tu criterio.  
-Solo introduce una pausa racional antes del impulso.
+P.A.U.S.A. no reemplaza tu criterio.  
+Introduce un espacio racional entre el impulso y la acción.
+""")
+
+st.divider()
+
+# -------------------------------------------------
+# ROADMAP
+# -------------------------------------------------
+
+st.markdown("## 🚀 Próximas versiones")
+
+st.markdown("""
+- Historial anónimo de decisiones  
+- Perfil personal de riesgo  
+- Consejos dinámicos según patrón  
+- Dashboard de autocontrol  
+- Versiones temáticas (legal, relaciones, inversiones)
 """)
