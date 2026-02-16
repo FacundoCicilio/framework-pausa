@@ -8,16 +8,6 @@ import csv, os
 st.set_page_config(page_title="💡 P.A.U.S.A. Amigable", page_icon="🧩", layout="centered")
 st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
 
-# ---------------------
-# Aviso de responsabilidad
-# ---------------------
-st.warning("""
-⚠️ Nota importante:  
-Esta herramienta **no da consejos personales, legales, médicos ni de seguridad vial**.  
-Solo ofrece un **análisis de tu situación usando probabilidades y teoría de juegos** para ayudarte a pensar antes de actuar.  
-Los resultados reflejan un **escenario hipotético y simplificado**; tu juicio personal siempre es lo más importante.
-""")
-
 st.markdown("Tomar decisiones bajo presión puede generar errores. Esta herramienta te ayuda a **frenar el impulso y pensar de manera segura**.")
 st.divider()
 
@@ -64,7 +54,6 @@ else:
 # Interpretación amigable para el usuario
 # ---------------------
 def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
-    # Probabilidad de éxito
     if p_exito < 0.4:
         exito_texto = "Bajas chances de que salga bien"
     elif p_exito < 0.7:
@@ -72,7 +61,6 @@ def interpretacion_amigable(p_exito, cooperar, no_cooperar, recomendacion):
     else:
         exito_texto = "Altas chances de que salga bien"
 
-    # Resultado esperado cooperación
     if cooperar > no_cooperar:
         coop_texto = "Si otros apoyan, esto tiene más chances de funcionar"
     else:
@@ -128,3 +116,13 @@ if os.path.exists(archivo_csv):
         st.text(f.read())
 else:
     st.info("Aún no hay ideas registradas.")
+
+# ---------------------
+# Aviso de responsabilidad al final
+# ---------------------
+st.warning("""
+⚠️ Nota importante:  
+Esta herramienta **no da consejos personales, legales, médicos ni de seguridad vial**.  
+Solo ofrece un **análisis de tu situación usando probabilidades y teoría de juegos** para ayudarte a pensar antes de actuar.  
+Los resultados reflejan un **escenario hipotético y simplificado**; tu juicio personal siempre es lo más importante.
+""")
