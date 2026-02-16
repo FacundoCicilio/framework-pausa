@@ -16,15 +16,15 @@ st.set_page_config(
 st.title("💡 P.A.U.S.A. Minimalista")
 st.markdown("""
 Tomar decisiones bajo presión puede generar errores.  
-Este mini-framework te ayuda a frenar el impulso y evaluar rápidamente.
+Esta herramienta te ayuda a frenar el impulso y evaluar rápido qué hacer.
 """)
 st.divider()
 
 # -------------------------------------------------
 # INPUTS CLAVE
 # -------------------------------------------------
-st.markdown("### Captura tu idea (opcional)")
-idea = st.text_area("Idea breve:", "", height=80)
+st.markdown("### Capturá tu idea (opcional)")
+idea = st.text_area("Escribí tu idea en pocas líneas:", "", height=80)
 
 st.markdown("### Evaluá tu situación rápidamente")
 impulso = st.checkbox("Siento que esto surge por impulso")
@@ -34,16 +34,15 @@ apoyo = st.slider("Probabilidad de que otros apoyen tu acción", 0.0, 1.0, 0.5, 
 # -------------------------------------------------
 # SCORE Y RECOMENDACIÓN
 # -------------------------------------------------
-# Calculamos score simple
-score_alerta = sum([impulso, riesgo])  # 0, 1, 2
+score_alerta = sum([impulso, riesgo])  # 0,1,2
 
-# Ajustamos según apoyo social
+# Ajuste según apoyo social
 if apoyo > 0.7:
     score_alerta -= 0.5
 elif apoyo < 0.3:
     score_alerta += 0.5
 
-# Recomendación simple
+# Recomendación
 if score_alerta <= 0.5:
     recomendacion = "🟢 Avanzar con precaución"
 elif score_alerta <= 1.5:
@@ -55,12 +54,14 @@ st.markdown("### Recomendación inmediata")
 st.markdown(f"**{recomendacion}**", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# ACCIÓN MÍNIMA SEGURA
+# ACCIÓN PEQUEÑA Y CONCRETA
 # -------------------------------------------------
 if recomendacion == "🟢 Avanzar con precaución":
-    accion = st.text_input("Definí tu acción mínima segura (opcional)")
+    st.markdown("### Primer paso concreto")
+    st.markdown("Escribí la **primera acción pequeña y segura** que podés hacer para probar tu idea sin riesgo:")
+    accion = st.text_input("Primer paso:", "")
     if accion:
-        st.info(f"💡 Acción mínima segura: {accion}")
+        st.info(f"💡 Primer paso definido: {accion}")
 
 # -------------------------------------------------
 # REGISTRO OPCIONAL
@@ -75,6 +76,6 @@ Riesgo: {riesgo}
 Apoyo social: {apoyo}
 Score alerta: {score_alerta:.1f}
 Recomendación: {recomendacion}
-Acción mínima segura: {accion if recomendacion == "🟢 Avanzar con precaución" else "N/A"}
+Primer paso definido: {accion if recomendacion == "🟢 Avanzar con precaución" else "N/A"}
 Fecha: {timestamp}
 """)
