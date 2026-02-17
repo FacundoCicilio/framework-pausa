@@ -1,4 +1,5 @@
 import streamlit as st
+import re
 
 # ---------------------
 # Configuración
@@ -17,42 +18,81 @@ if "resultado" not in st.session_state:
 if "accion_confirmada" not in st.session_state:
     st.session_state.accion_confirmada = False
 
+
 # ---------------------
-# Filtros de seguridad
+# Normalización de texto
+# ---------------------
+def normalizar(texto):
+    texto = texto.lower()
+    texto = re.sub(r'[^\w\s]', '', texto)
+    return texto
+
+
+# ---------------------
+# Filtros adaptados a Argentina
 # ---------------------
 def contenido_violento(texto):
     palabras = [
         "matar", "arma", "disparar", "cuchillo",
         "golpear", "atacar", "explosivo",
-        "envenenar", "violencia"
+        "envenenar", "violencia",
+        "cagar a trompadas", "romper todo",
+        "hacer mierda", "apuñalar"
     ]
-    texto = texto.lower()
-    return any(p in texto for p in palabras)
+    texto = normalizar(texto)
+    return any(re.search(rf"\b{re.escape(p)}\b", texto) for p in palabras)
 
 
 def contenido_ilegal(texto):
     palabras = [
         "droga", "traficar", "estafa", "fraude",
-        "robar", "hackear", "lavar dinero"
+        "robar", "hackear", "lavar dinero",
+        "evadir impuestos", "afip",
+        "denuncia falsa", "coima",
+        "soborno", "meter preso sin pruebas",
+        "cagar a alguien", "hacer una estafa",
+        "negro sin facturar"
     ]
-    texto = texto.lower()
-    return any(p in texto for p in palabras)
+    texto = normalizar(texto)
+    return any(re.search(rf"\b{re.escape(p)}\b", texto) for p in palabras)
 
 
 def alto_impacto_terceros(texto):
     palabras = [
-        "embarazada", "hijo", "niño",
-        "abandonar", "divorcio con hijos"
+        "embarazada", "hijo", "hija",
+        "niño", "niña", "bebé",
+        "abandonar", "divorcio con hijos",
+        "tenencia", "cuota alimentaria",
+        "echar a alguien", "despedir",
+        "dejar sin trabajo"
     ]
-    texto = texto.lower()
-    return any(p in texto for p in palabras)
+    texto = normalizar(texto)
+    return any(re.search(rf"\b{re.escape(p)}\b", texto) for p in palabras)
+
+
+# ---------------------
+# Clasificación de riesgo
+# ---------------------
+def clasificar_riesgo(texto):
+
+    if contenido_violento(texto):
+        return "bloqueado"
+
+    if contenido_ilegal(texto):
+        return "riesgo_extremo"
+
+    if alto_impacto_terceros(texto):
+        return "impacto_terceros"
+
+    return "normal"
+
 
 # ---------------------
 # Evaluación estratégica del paso
 # ---------------------
-def evaluar_paso(accion, nivel):
+def evaluar_paso(accion):
 
-    accion_lower = accion.lower()
+    accion_lower = normalizar(accion)
 
     aumenta_opciones = any(p in accion_lower for p in [
         "buscar", "explorar", "averiguar",
@@ -63,7 +103,7 @@ def evaluar_paso(accion, nivel):
 
     irreversible = any(p in accion_lower for p in [
         "renunciar", "denunciar", "terminar",
-        "cortar relación", "demandar"
+        "cortar relacion", "demandar"
     ])
 
     if irreversible:
@@ -74,10 +114,11 @@ def evaluar_paso(accion, nivel):
 
     return "Movimiento neutral. Evaluá cómo impacta tu poder de negociación."
 
+
 # ---------------------
 # Interpretación general
 # ---------------------
-def generar_interpretacion(p_exito, nivel):
+def generar_interpretacion(nivel):
 
     if nivel == "Riesgo Alto":
         return "Escenario desfavorable. Evitá decisiones irreversibles."
@@ -87,8 +128,9 @@ def generar_interpretacion(p_exito, nivel):
 
     return "Condiciones relativamente favorables, pero mantené prudencia."
 
+
 # ---------------------
-# Título
+# UI
 # ---------------------
 st.title("💡 P.A.U.S.A. – Decisiones bajo presión")
 st.markdown(
@@ -96,9 +138,6 @@ st.markdown(
 )
 st.divider()
 
-# ---------------------
-# Formulario principal
-# ---------------------
 with st.form("form_pausa"):
 
     st.markdown("### Tu situación")
@@ -114,27 +153,31 @@ with st.form("form_pausa"):
 
     submit = st.form_submit_button("🔎 Evaluar decisión")
 
-# ---------------------
-# Bloqueo por violencia o ilegalidad
-# ---------------------
-if submit and (contenido_violento(idea) or contenido_ilegal(idea)):
-
-    st.error("La acción implica violencia o ilegalidad.")
-    st.stop()
 
 # ---------------------
-# Cálculo
+# Lógica principal
 # ---------------------
 if submit:
+
+    clasificacion = clasificar_riesgo(idea)
+
+    if clasificacion == "bloqueado":
+        st.error("La acción implica violencia. No se puede procesar.")
+        st.stop()
 
     p_base = 0.6
     penalizacion = 0
 
     if impulso:
         penalizacion += 0.2
+
     if riesgo:
-        penalizacion += 0.3
-    if alto_impacto_terceros(idea):
+        penalizacion += 0.25
+
+    if clasificacion == "riesgo_extremo":
+        penalizacion += 0.35
+
+    if clasificacion == "impacto_terceros":
         penalizacion += 0.15
 
     bonus_apoyo = 0.25 * apoyo
@@ -161,6 +204,7 @@ if submit:
     st.session_state.analisis_realizado = True
     st.session_state.accion_confirmada = False
 
+
 # ---------------------
 # Mostrar resultados
 # ---------------------
@@ -178,7 +222,7 @@ if st.session_state.analisis_realizado:
     st.markdown(f"**{r['recomendacion']}**")
 
     st.markdown("### Interpretación")
-    st.write(generar_interpretacion(r["p_exito"], r["nivel"]))
+    st.write(generar_interpretacion(r["nivel"]))
 
     st.divider()
     st.markdown("### Definí tu próximo paso prudente")
@@ -190,8 +234,8 @@ if st.session_state.analisis_realizado:
         if accion.strip() == "":
             st.warning("Definí un paso antes de confirmar.")
 
-        elif contenido_violento(accion) or contenido_ilegal(accion):
-            st.error("El paso implica violencia o ilegalidad.")
+        elif clasificar_riesgo(accion) == "bloqueado":
+            st.error("El paso implica violencia.")
 
         else:
             st.session_state.accion_confirmada = True
@@ -199,12 +243,10 @@ if st.session_state.analisis_realizado:
 
     if st.session_state.accion_confirmada:
         st.success(f"✔ Paso definido: {st.session_state.accion_texto}")
-        evaluacion = evaluar_paso(st.session_state.accion_texto, r["nivel"])
+        evaluacion = evaluar_paso(st.session_state.accion_texto)
         st.info(evaluacion)
 
-# ---------------------
-# Nota final
-# ---------------------
+
 st.divider()
 st.warning("""
 Esta herramienta es un modelo simplificado con fines reflexivos y educativos.
