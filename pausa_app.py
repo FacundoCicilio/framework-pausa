@@ -37,7 +37,7 @@ def contenido_violento(texto):
         "golpear", "atacar", "explosivo",
         "envenenar", "violencia",
         "cagar a trompadas", "romper todo",
-        "hacer mierda", "apuñalar"
+        "hacer mierda", "apuñalar", "suicidio", "suicidar"
     ]
     texto = normalizar(texto)
     return any(re.search(rf"\b{re.escape(p)}\b", texto) for p in palabras)
@@ -253,3 +253,4 @@ Esta herramienta es un modelo simplificado con fines reflexivos y educativos.
 No constituye asesoramiento legal, médico, financiero ni psicológico.
 La decisión final siempre es responsabilidad del usuario.
 """)
+
